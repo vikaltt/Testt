@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гибкий расчет баллов</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+
+        .container { 
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 800px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .row { 
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
+        .total {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+            }
+            
+            .column {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            input[type="number"] {
+                font-size: 0.95em;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            .total {
+                font-size: 1.1em;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Гибкая система расчета баллов</h2>
+        
+        <!-- Лекции -->
+        <div class="row">
+            <div class="column">
+                <label>Всего лекций:</label>
+                <input type="number" id="total-lectures" min="1" value="20">
+                
+                <label>Посещено лекций:</label>
+                <input type="number" id="attended-lectures" min="0" value="18">
+            </div>
+            <div class="column">
+                <div class="score" id="lectures-score">Баллы: 0.0/20.0</div>
+            </div>
+        </div>
+
+        <!-- Практики -->
+        <div class="row">
+            <div class="column">
+                <label>Всего практик:</label>
+                <input type="number" id="total-practices" min="1" value="16">
+                
+                <label>Посещено практик:</label>
+                <input type="number" id="attended-practices" min="0" value="15">
+            </div>
+            <div class="column">
+                <div class="score" id="practices-score">Баллы: 0.0/20.0</div>
+            </div>
+        </div>
+
+        <!-- Лабораторные -->
+        <div class="row">
+            <div class="column">
+                <label>Всего лаб. работ:</label>
+                <input type="number" id="total-labs" min="1" value="4">
+                
+                <label>Сдано лаб. работ:</label>
+                <input type="number" id="completed-labs" min="0" value="3">
+            </div>
+            <div class="column">
+                <div class="score" id="labs-score">Баллы: 0.0/30.0</div>
+            </div>
+        </div>
+
+        <div class="total" id="total-score">Всего баллов: 0.0/70.0</div>
+    </div>
+
+    <script>
+        function calculateScores() {
+            const MAX_SCORES = { lectures: 20, practices: 20, labs: 30 };
+            
+            const inputs = {
+                lectures: {
+                    total: Math.max(1, parseInt(document.getElementById('total-lectures').value) || 0),
+                    attended: Math.max(0, parseInt(document.getElementById('attended-lectures').value) || 0)
+                },
+                practices: {
+                    total: Math.max(1, parseInt(document.getElementById('total-practices').value) || 0),
+                    attended: Math.max(0, parseInt(document.getElementById('attended-practices').value) || 0)
+                },
+                labs: {
+                    total: Math.max(1, parseInt(document.getElementById('total-labs').value) || 0),
+                    completed: Math.max(0, parseInt(document.getElementById('completed-labs').value) || 0)
+                }
+            };
+
+            const scores = {
+                lectures: inputs.lectures.total > 0 ? 
+                    (inputs.lectures.attended / inputs.lectures.total) * MAX_SCORES.lectures : 0,
+                practices: inputs.practices.total > 0 ? 
+                    (inputs.practices.attended / inputs.practices.total) * MAX_SCORES.practices : 0,
+                labs: inputs.labs.total > 0 ? 
+                    (inputs.labs.completed / inputs.labs.total) * MAX_SCORES.labs : 0
+            };
+
+            // Обновление интерфейса
+            document.getElementById('lectures-score').textContent = 
+                `Баллы: ${scores.lectures.toFixed(1)}/${MAX_SCORES.lectures}`;
+            
+            document.getElementById('practices-score').textContent = 
+                `Баллы: ${scores.practices.toFixed(1)}/${MAX_SCORES.practices}`;
+            
+            document.getElementById('labs-score').textContent = 
+                `Баллы: ${scores.labs.toFixed(1)}/${MAX_SCORES.labs}`;
+
+            const total = scores.lectures + scores.practices + scores.labs;
+            document.getElementById('total-score').textContent = 
+                `Всего баллов: ${total.toFixed(1)}/70.0`;
+        }
+
+        // Инициализация обработчиков
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', calculateScores);
+        });
+
+        // Первоначальный расчет
+        calculateScores();
+    </script>
+</body>
+</html>
